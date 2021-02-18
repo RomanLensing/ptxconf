@@ -2,36 +2,14 @@
 import ptxconftools
 from ptxconftools import ConfController
 from ptxconftools.gtk import MonitorSelector
-#import pygtk
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk
-gi.require_version('AppIndicator3', '0.1')
-from gi.repository import AppIndicator3 as appindicator
 import os
 
 iconpath = os.path.dirname( ptxconftools.__file__ )+"/iconStyle03_256.png"
-APPINDICATOR_ID = "PTXConf"
 class PTXConfUI():
     def __init__(self):
-        # create systray interface
-        self.systray = appindicator.Indicator.new(APPINDICATOR_ID, "testname", appindicator.IndicatorCategory.SYSTEM_SERVICES)
-        self.systray = appindicator.Indicator.new(APPINDICATOR_ID, iconpath, appindicator.IndicatorCategory.SYSTEM_SERVICES)
-        self.systray.set_status(appindicator.IndicatorStatus.ACTIVE)
-
-        # construct menu
-        menu = gtk.Menu()
-        mitem = gtk.MenuItem("configure")
-        mitem.connect("activate", self.createConfigWindow)
-        menu.append(mitem)
-        mitem = gtk.MenuItem("exit")
-        mitem.connect("activate", self.exit_program)
-        menu.append(mitem)
-        menu.show_all()
-
-        # attach menu to out system tray
-        self.systray.set_menu(menu)
-
         # instantiate confcontroller
         self.myConf = ConfController()
 
@@ -77,7 +55,10 @@ class PTXConfUI():
         self.window.connect("destroy", self.destroyConfigWindow)
 
         button_apply = gtk.Button("Apply")
+        button_refresh = gtk.Button("Refresh")
         button_close = gtk.Button("Close")
+        
+        button_refresh.connect("clicked", self.refreshConfigWindow)
 
         button_close.connect("clicked", self.destroyConfigWindow)
         vbox = gtk.VBox(spacing=20)
@@ -147,6 +128,10 @@ class PTXConfUI():
         self.window.monitorSelector.connect('button-press-event', self.monSelectorCallback)
         self.window.ptDropdown = ptDropdown
         self.window.monitorDropdown = monitorDropdown
+        
+    def refreshConfigWindow(self, callback_data=None):
+        self.destroyConfigWindow()
+        self.createConfigWindow()
 
     def monDropdownCallback(self, calback_data=None):
         # update MonitorSelector
@@ -178,4 +163,5 @@ class PTXConfUI():
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 p = PTXConfUI()
+p.createConfigWindow()
 p.main()
